@@ -20,7 +20,7 @@ class Header extends Component {
           >
             <ul className="navbar-nav mt-2 mt-lg-0">
               <li className="nav-item active">
-                {/* <a className="nav-link" href="#">Home <span className="sr-only">(current)</span></a> */}
+                <a className="nav-link" href="#">Home</a>
               </li>
               <li className="nav-item">
                 {/* <a className="nav-link" href="#"></a>               */}

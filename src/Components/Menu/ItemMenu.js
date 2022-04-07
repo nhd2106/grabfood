@@ -106,7 +106,30 @@ export default class ItemMenu extends Component {
       Option: this.state.Value_Check_Option.filter((value) => value != ""),
       number: Number(this.state.number),
       people: localStorage.getItem("User"),
+    }).then((snap) =>{
+      const IdCart = localStorage.getItem("ID");
+      let DataID = []
+      try
+      {
+        if(IdCart != null)
+        DataID = JSON.parse(IdCart);
+      }catch{}
+      
+      DataID.push({
+        id : snap.key
+      })
+      localStorage.setItem("ID",JSON.stringify(DataID))
+      return NotificationManager.success(
+        "Thêm món thực đơn thành công !",
+        "Thêm món",
+        3000
+      );
     });
+
+    // console.log(key);
+
+    
+
   };
 
   handleHide_Option = () => {
@@ -179,11 +202,7 @@ export default class ItemMenu extends Component {
   handle_order = () => {
     this.handleHide_Option();
     this.add_food(this.props.id, this.props.product_name);
-    return NotificationManager.success(
-      "Thêm món thực đơn thành công !",
-      "Thêm món",
-      3000
-    );
+    
   };
 
   handle_print_price = () => {

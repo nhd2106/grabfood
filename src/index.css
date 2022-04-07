@@ -20,3 +20,16 @@ code {
   width: 40px;
   text-align: center;
 }
+
+.footer {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.load-center {
+  width: 100%;
+  justify-content: center;
+  display: inline-flex;
+}
