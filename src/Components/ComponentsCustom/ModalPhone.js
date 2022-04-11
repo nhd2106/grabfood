@@ -36,7 +36,6 @@ export default function ModalPhone({ type, isShow, handleSave }) {
         </ModalTitle>
       </Modal.Header>
       <Modal.Body>
-        <Modal.Title>
           <InputGroup className="mb-3">
             <InputGroup.Text>
               {type === "SMS"
@@ -59,7 +58,6 @@ export default function ModalPhone({ type, isShow, handleSave }) {
               />
             )}
           </InputGroup>
-        </Modal.Title>
       </Modal.Body>
       <Modal.Footer>
         <Button

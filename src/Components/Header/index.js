@@ -1,4 +1,10 @@
 import React, { Component } from "react";
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import { Badge } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+
 class Header extends Component {
 
   render() {
@@ -19,9 +25,22 @@ class Header extends Component {
             id="collapsibleNavId"
           >
             <ul className="navbar-nav mt-2 mt-lg-0">
-              <li className="nav-item active">
-                <a className="nav-link" href="#">Home</a>
-              </li>
+              {/* <li className="nav-item active"> */}
+                {/* <a className="nav-link" href="#">Home</a> */}
+                
+                <IconButton onClick={() => this.props.clickCart()} aria-label="ShoppingCartOutlinedIcon" color="primary">
+                  <Badge color="primary" badgeContent={this.props.badgeContent}>
+                    <ShoppingCartOutlinedIcon />
+                  </Badge>
+                </IconButton>
+                
+                <IconButton  onClick = {() => this.props.clickAddFood()} aria-label="AddIcon" color="primary">
+                    <AddIcon/>
+                </IconButton>
+
+                
+
+              {/* </li> */}
               <li className="nav-item">
                 {/* <a className="nav-link" href="#"></a>               */}
               </li>

@@ -25,6 +25,7 @@ class index extends Component {
     var arr = this.props.data_Menu;
     arr = arr.filter(item => item.title == title)
     return arr.map(value => {
+ 
       return (
         <ItemMenu
           id={value.id}

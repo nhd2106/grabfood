@@ -66,11 +66,14 @@ class ListFoodOrder extends Component {
       notes.forEach((element) => {
         var arrOption = [];
         const key = element.key;
+        const Request = element.val().Request;
         const id = element.val().id;
         const nameFood = element.val().nameFood;
         const Option = element.val().Option;
         const number = element.val().number;
         const people = element.val().people;
+        const foodLock = element.val().Lock;
+        const show = element.val().show;
 
         const value_option = firebase.database().ref(`node1/check/${id}`);
         value_option.on("value", (notes1) => {
@@ -97,6 +100,9 @@ class ListFoodOrder extends Component {
             number: number,
             sum_price_option: sum,
             people: people,
+            foodLock : foodLock,
+            Request : Request,
+            show : show,
           });
           console.log(arrData);
           this.setState({
@@ -141,6 +147,9 @@ class ListFoodOrder extends Component {
     var data = this.state.dataFirebase;
 
     for (let index = 0; index < data.length; index++) {
+
+      console.log(data[index])
+
       data[index].people = data[index].people + " X" + data[index].number;
 
       for (let index1 = index + 1; index1 < data.length; index1++) {
@@ -191,19 +200,25 @@ class ListFoodOrder extends Component {
         var arr = this.state.dataMenu.filter(
           (value_ft) => value_ft.id == value.id
         );
+        console.log(value);
         return (
+        (value.show) ?
           <ItemFoodOrder
             id_key={value.key}
             id={value.id}
             index={key}
-            nameFood={arr[0].nameFood}
+            nameFood={arr[0]?.nameFood || ''}
             Option={value.Option}
             number={value.number}
-            price={arr[0].price}
+            price={arr[0]?.price || ''}
             sum_price_option={value.sum_price_option}
             people={value.people}
             Tinhtien={this.state.arr_Tinhtien}
+            foodLock = {value.foodLock}
+            Request = {value.Request}
+            // show = {value.show}
           />
+          : <div/>
         );
       });
     }
@@ -235,7 +250,7 @@ class ListFoodOrder extends Component {
       New: 1,
     });
 
-    axios.get("http://localhost:1235/crawl/Khoitao");
+    axios.get("http://serverlth.ddns.net:1235/Khoitao");
   };
 
   handleClickGetData = () => {
@@ -282,26 +297,24 @@ class ListFoodOrder extends Component {
               <h5 className="mb-0">
                 <a className="float-left">Tổng cộng: {this.state.sum_Tien}</a>
                 <a className="float-right">
-                  <button
+                  <button 
                     onClick={() => this.handleClickGetData()}
-                    className="btn btn-primary float-right"
+                    className="btn btn-primary float-right ml-1"
                   >
-                    {" "}
                     Lấy dữ liệu
                   </button>
                   <button
                     onClick={() => this.handle_unlock()}
-                    className="btn btn-warning float-right"
+                    className="btn btn-warning float-right ml-1"
                   >
-                    {" "}
+                    
                     Mở khóa
                   </button>
                   <button
                     disabled={this.state.lock}
                     onClick={() => this.handle_TinhTien()}
-                    className="btn btn-success float-right"
+                    className="btn btn-success float-right ml-1"
                   >
-                    {" "}
                     Tổng kết
                   </button>
                 </a>

@@ -4,8 +4,10 @@ import Option from "../Option";
 import Drawer from "@mui/material/Drawer";
 import Modal from "react-bootstrap/Modal";
 import { NotificationManager } from "react-notifications";
+import ModalInsert from "../ComponentsCustom/ModalInsert";
+import { connect } from 'react-redux';
 
-export default class ItemMenu extends Component {
+class ItemMenu extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -18,16 +20,17 @@ export default class ItemMenu extends Component {
       number: 1,
       Name_People: "",
       price_option_check: 0,
+      showEditFood : false
     };
   }
 
-  getDataOnClick = () => {
-    var data = {};
-    data.product_name = this.props.product_name;
-    data.product_price = this.props.product_price;
-    data.image = this.props.image;
-    data.id = this.props.id;
-  };
+  // getDataOnClick = () => {
+  //   var data = {};
+  //   data.product_name = this.props.product_name;
+  //   data.product_price = this.props.product_price;
+  //   data.image = this.props.image;
+  //   data.id = this.props.id;
+  // };
 
   handleGet_ValueCheck = (value, price) => {
     var arr = this.state.Value_Check_Option.filter(
@@ -98,6 +101,8 @@ export default class ItemMenu extends Component {
     });
   };
 
+  
+
   add_food = (id, name) => {
     const nodeAdd = firebase.database().ref("Call/");
     nodeAdd.push({
@@ -105,8 +110,12 @@ export default class ItemMenu extends Component {
       id: id,
       Option: this.state.Value_Check_Option.filter((value) => value != ""),
       number: Number(this.state.number),
+      Lock : false,
       people: localStorage.getItem("User"),
     }).then((snap) =>{
+
+      this.props.addIdLocal(snap.key);
+
       const IdCart = localStorage.getItem("ID");
       let DataID = []
       try
@@ -119,11 +128,15 @@ export default class ItemMenu extends Component {
         id : snap.key
       })
       localStorage.setItem("ID",JSON.stringify(DataID))
+
+
+
       return NotificationManager.success(
         "Thêm món thực đơn thành công !",
         "Thêm món",
         3000
       );
+
     });
 
     // console.log(key);
@@ -194,6 +207,19 @@ export default class ItemMenu extends Component {
     }
   };
 
+  getDataOnClick = () => {
+
+    this.setState({
+      showEditFood : !this.state.showEditFood,
+    });
+
+    // <ModalInsert 
+    // handleShowInsert = {() => this.handleShowInsert()}
+    // showInsertFood = {true}
+    // handleInserData = {(data, next) => {this.handleInserData(data, next)}}
+    //  />
+  };
+
   onChange_inputNumber = (event) => {
     if (event.target.value <= 1) event.target.value = 1;
     this.setState({ number: event.target.value });
@@ -223,6 +249,15 @@ export default class ItemMenu extends Component {
     return (
       <div className="col-4 mt-4 ">
         <div className="card">
+        <ModalInsert 
+          type = "Edit"
+          handleShowInsert = {() => this.getDataOnClick()}
+          showInsertFood = {this.state.showEditFood}
+          id = {this.props.id}
+          nameFood = {this.props.product_name}
+          price = {this.props.product_price}
+          handleInserData = {(data, next) => {this.handleInserData(data, next)}}
+          />
           <img
             onClick={() => this.getDataOnClick()}
             className="card-img-top"
@@ -232,7 +267,7 @@ export default class ItemMenu extends Component {
           <div className="card-body">
             <div>
               <h4
-                onClick={() => this.getDataOnClick()}
+                onClick={() => this.check_option()}
                 className="row card-title float-left mt-2.5"
               >
                 {this.props.product_name}
@@ -241,7 +276,7 @@ export default class ItemMenu extends Component {
             <br />
             <div>
               <h5
-                onClick={() => this.getDataOnClick()}
+                onClick={() => this.check_option()}
                 className=" row card-text float-right"
               >
                 {this.props.product_price}
@@ -291,3 +326,23 @@ export default class ItemMenu extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    dataIdLocal: state.dataIdLocal
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addIdLocal: (id) => {
+      dispatch({
+        type:'ADD_ID_LOCAL',
+        value : id
+      })
+    }
+  }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(ItemMenu)

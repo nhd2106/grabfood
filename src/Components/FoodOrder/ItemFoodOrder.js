@@ -3,7 +3,12 @@ import _ from "lodash";
 import firebase from "firebase";
 import Option from "../Option";
 import { connect } from "react-redux";
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import { Button } from "@mui/material";
+import { NotificationManager } from 'react-notifications';
+
 const nodeAdd = firebase.database().ref("Call/");
+
 
 class ItemFoodOrder extends Component {
   constructor(props) {
@@ -18,7 +23,21 @@ class ItemFoodOrder extends Component {
 
   DeleteData = () => {
     console.log(this.props.id_key);
-    nodeAdd.child(this.props.id_key).remove();
+    nodeAdd.child(this.props.id_key).remove().then(function() {
+      NotificationManager.success(
+        "Xóa món ăn thành công",
+        "Thành công",
+        3000
+      );
+    })
+    .catch(function(error) {
+      console.log("Remove failed: " + error.message)
+      NotificationManager.error(
+        error.message,
+        "Lỗi",
+        3000
+      );
+    });
   };
 
   sum = 0;
@@ -67,6 +86,14 @@ class ItemFoodOrder extends Component {
     }
   };
 
+  handleUnclockFoodOrder = () => {
+      console.log(this.props.id_key);
+      nodeAdd.child(this.props.id_key).update({
+        Lock: false,
+        Request : false,
+      }).then();
+  }
+
   render() {
     return (
       <div className="card">
@@ -80,8 +107,11 @@ class ItemFoodOrder extends Component {
               aria-expanded="true"
               aria-controls="noteContent1"
             >
-              {this.props.nameFood}
+              {(this.props.foodLock) ? <img style = {{maxWidth : 20}} src="img/icon-sc.png"/> : <div></div>}
+              {` ${this.props.nameFood} `}
+              {/* {(this.props.foodLock) ?  <div>Mở khóa</div> : <div></div>} */}
             </a>
+            {(this.props.Request) ?  <Button onClick={() => this.handleUnclockFoodOrder()}> <LockOpenIcon/> Mở khóa</Button> : <div></div>}
             <a
               className="float-right"
               data-toggle="collapse"

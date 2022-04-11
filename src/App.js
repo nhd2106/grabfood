@@ -8,6 +8,8 @@ import {
 } from "react-notifications";
 
 import ModalPhone from "./Components/ComponentsCustom/ModalPhone";
+import ModalInsert from "./Components/ComponentsCustom/ModalInsert";
+import { uid } from 'uid';
 import Router from "./Router";
 import firebase from "firebase";
 import Drawer from '@mui/material/Drawer';
@@ -15,6 +17,13 @@ import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import { Grid, List, ListItem, ListItemIcon, ListItemText, Table, TableBody, TableCell, TableRow } from "@mui/material";
 import Cart from './Components/Cart'
+import Header from './Components/Header';
+import { connect } from "react-redux";
+import _ from 'lodash'
+
+
+const menu_Item = firebase.database().ref("node1/menu/");
+const lock = firebase.database().ref(`node1/`);
 
 class App extends Component {
   constructor(props) {
@@ -28,6 +37,10 @@ class App extends Component {
       hide_modal: true,
       showCart : false,
       dataCart : [],
+      badgeContent : 0,
+      showInsertFood : false,
+      abc : 0,
+      lock: false,
     };
   }
 
@@ -42,23 +55,32 @@ class App extends Component {
 
   componentWillMount() {
     
+    this.props.dispatch1();
+
+    const lock = firebase.database().ref(`node1/Lock`)
+    lock.on("value", (item_lock) => {
+      const lock = item_lock.val().Lock;
+      this.setState({ lock: lock });
+    })
+
     if (localStorage.getItem("User") != null) {
       this.setState({ hide_modal: false });
     }
 
-    const menu_Item = firebase.database().ref("node1/menu/");
+
     menu_Item.on("value", (items) => {
       var arrData = [];
+      console.log(items.val())
       items.forEach((element) => {
         element.forEach((food) => {
-          const key = food.val().id;
+          const id = food.val().id;
           const description = food.val().description;
           const nameFood = food.val().nameFood;
           const img = food.val().img;
           const title = food.val().title;
           const price = food.val().price;
           arrData.push({
-            id: key,
+            id: id,
             nameFood: nameFood,
             description: description,
             img: img,
@@ -90,80 +112,80 @@ class App extends Component {
   
 
     
-    const IdCart = localStorage.getItem("ID");
-
-    // console.log( JSON.parse(IdCart));
-   
-   
-    if(IdCart != null)
-    {
-    let DataID = []
-    try
-      {
-        DataID  = JSON.parse(IdCart) ;
-      }catch{
-        localStorage.setItem("ID",[]);
-      }
+    // const IdCart = localStorage.getItem("ID");
+    // // let IdCartNew = [];
+    // if(IdCart != null)
+    // {
+    // let DataID = []
+    // try
+    //   {
+    //     DataID  =  JSON.parse(IdCart);
+    //   }catch{
+    //     localStorage.setItem("ID",[]);
+    //   }
       
-    var arrData = [];
-    DataID?.map((value) => {
-    const Call = firebase.database().ref(`Call/${value.id}`);
-    Call.on("value", (notes) => {
-    console.log(notes.val().id);
-
+    // var arrData = [];
+    // // DataID?.map((value) => {
+    // _.map((this.props.dataIdLocal), (value) => {
       
-        var arrOption = [];
-        const key = notes.key;
-        const id = notes.val().id;
-        const nameFood = notes.val().nameFood;
-        const Option = notes.val().Option;
-        const number = notes.val().number;
-        const people = notes.val().people;
+    // console.log(value);
+    // const Call = firebase.database().ref(`Call/${value.id}`);
+    // Call.on("value", (notes) => {
+    // // console.log(notes.val().id);
+    //   // if(notes != null)
+    //   //   IdCartNew.push({
+    //   //     id : value.id
+    //   //   });
+    //     var arrOption = [];
+    //     const key = notes.key;
+    //     const id = notes.val().id;
+    //     const nameFood = notes.val().nameFood;
+    //     const Option = notes.val().Option;
+    //     const number = notes.val().number;
+    //     const foodLock = notes.val().Lock;
 
-        const value_option = firebase.database().ref(`node1/check/${id}`);
-        value_option.on("value", (notes1) => {
-          var sum = 0;
-          notes1.forEach((element1) => {
-            element1.val().Value?.forEach((option) => {
-              if (Option.filter((op) => op === option.name_value).length > 0) {
-                Option.map((op) => {
-                  if (op === option.name_value) {
-                    const num = Number(option?.price) || 0;
-                    sum = num + sum;
-                    arrOption.push(option);
-                  }
-                });
-              }
-            });
-          });
+    //     const value_option = firebase.database().ref(`node1/check/${id}`);
+    //     value_option.on("value", (notes1) => {
+    //       var sum = 0;
+    //       notes1.forEach((element1) => {
+    //         element1.val().Value?.forEach((option) => {
+    //           if (Option.filter((op) => op === option.name_value).length > 0) {
+    //             Option.map((op) => {
+    //               if (op === option.name_value) {
+    //                 const num = Number(option?.price) || 0;
+    //                 sum = num + sum;
+    //                 arrOption.push(option);
+    //               }
+    //             });
+    //           }
+    //         });
+    //       });
           
-
-          const fullFood = this.state.dataFirebase.filter(value => value.id == id)
-
-          console.log(fullFood[0]);
-
-          sum += Number(fullFood[0]?.price) || 0;
-          arrData.push({
-            key: key,
-            id: id,
-            nameFood: nameFood,
-            Option: arrOption,
-            number: number,
-            sum: sum,
-            // people: people,
-            img: fullFood[0]?.img,
-          });
-        });
-      });
-    })
-      this.setState({
-        dataCart : arrData
-      })
-    }
-  
-
-
-
+    //       const fullFood = this.state.dataFirebase.filter(value => value.id == id)
+    //       // console.log(fullFood[0]);
+    //       sum += Number(fullFood[0]?.price) || 0;
+    //       arrData.push({
+    //         key: key,
+    //         id: id,
+    //         nameFood: nameFood,
+    //         Option: arrOption,
+    //         number: number,
+    //         sum: sum,
+    //         // people: people,
+    //         img: fullFood[0]?.img,
+    //         foodLock : foodLock,
+    //       });
+    //     });
+    //   });
+    //   // localStorage.setItem("ID", JSON.stringify(IdCartNew));
+    //   // console.log(IdCartNew);
+    // })
+      
+    //   // console.log(IdCartNew);
+    //   this.setState({
+    //     dataCart : arrData,
+    //     // badgeContent : DataID.length
+    //   })
   }
 
   UpdateState = (type, value) => {
@@ -192,16 +214,119 @@ class App extends Component {
     
   }
 
+  handleShowInsert = () => {
+    this.setState({
+      showInsertFood : !this.state.showInsertFood
+    })
+  }
 
+  handleInserData = (data, next) => {
+  //   menu_Item.child('thuc-don-xbot').push({
+  //     nameFood : data.name,
+  //     title: "thuc-don-xbot",
+  //     id : uid(16),
+  //     img : data.img,
+  //     description : '',
+  //     price: data.price
+  // })
+  
+    if(next != true)
+    {
+      this.setState({
+        showInsertFood : !this.state.showInsertFood
+      })
+    }
+  }
+
+  testprop = () => {
+    // console.log(this.props.dataIdLocal)
+    // _.map( (this.props.dataIdLocal), (value) => console.log(value) )
+    
+    // this.setState({abc : this.props.dataIdLocal.length})
+    // {_.map((this.props.dataIdLocal), (value) => {console.log(value);})}
+    // const x = this.props.dataIdLocal.length;
+    // console.log(x);
+    var arrData = [];
+    _.map((this.props.dataIdLocal), (value) => {
+    console.log(value);
+    const Call = firebase.database().ref(`Call/${value.id}`);
+    Call.on("value", (notes) => {
+    // console.log(notes.val().id);
+      // if(notes != null)
+      //   IdCartNew.push({
+      //     id : value.id
+      //   });
+        var arrOption = [];
+        const key = notes.key;
+        const id = notes.val().id;
+        const nameFood = notes.val().nameFood;
+        const Option = notes.val().Option;
+        const number = notes.val().number;
+        const foodLock = notes.val().Lock;
+
+        const value_option = firebase.database().ref(`node1/check/${id}`);
+        value_option.on("value", (notes1) => {
+          var sum = 0;
+          notes1.forEach((element1) => {
+            element1.val().Value?.forEach((option) => {
+              if (Option.filter((op) => op === option.name_value).length > 0) {
+                Option.map((op) => {
+                  if (op === option.name_value) {
+                    const num = Number(option?.price) || 0;
+                    sum = num + sum;
+                    arrOption.push(option);
+                  }
+                });
+              }
+            });
+          });
+          
+          const fullFood = this.state.dataFirebase.filter(value => value.id == id)
+          // console.log(fullFood[0]);
+          sum += Number(fullFood[0]?.price) || 0;
+          arrData.push({
+            key: key,
+            id: id,
+            nameFood: nameFood,
+            Option: arrOption,
+            number: number,
+            sum: sum,
+            // people: people,
+            img: fullFood[0]?.img,
+            foodLock : foodLock,
+          });
+        });
+      });
+      // localStorage.setItem("ID", JSON.stringify(IdCartNew));
+      // console.log(IdCartNew);
+    })
+      
+      // console.log(IdCartNew);
+      // this.setState({
+      //   dataCart : arrData,
+      //   // badgeContent : DataID.length
+      // })
+
+      console.log(arrData);
+      return arrData;
+
+  }
 
   render() {
-    return (
 
+    //  {this.testprop()}
+    return (
+      
     <div className="container">
-    <button onClick = {() => this.handleChangeShowCart()}>Click Cart</button>
-       
+    {/* <button onClick = {() => this.testprop()}>Click insert</button> */}
+      <ModalInsert 
+      handleShowInsert = {() => this.handleShowInsert()}
+      showInsertFood = {this.state.showInsertFood}
+      handleInserData = {(data, next) => {this.handleInserData(data, next)}}
+      type = "Add"
+       />
       {console.log(this.state.dataCart)}
-      <Cart data = {this.state.dataCart} isShow = {this.state.showCart} handleShow = {() => {this.handleChangeShowCart()}}></Cart>
+      <Cart lock = {this.state.lock} data = {this.testprop()} isShow = {this.state.showCart} handleShow = {() => {this.handleChangeShowCart()}}></Cart>
 
 
 
@@ -227,9 +352,11 @@ class App extends Component {
 <ModalPhone
   type={"Name"}
   isShow={this.state.hide_modal}
-  handleSave={(type, value) => this.UpdateState(type, value)}
+  handleSave={(type, value) => this.UpdateState(type, value)
+  }
 />
 <NotificationContainer />
+<Header badgeContent = {this.props.dataIdLocal.length || 0} clickAddFood = {() => this.handleShowInsert()}  clickCart = {() => this.handleChangeShowCart()} />
 <RouterDom>
   <Router
     data_Title={this.state.h2}
@@ -262,4 +389,23 @@ class App extends Component {
     );
   }
 }
-export default App;
+
+const mapStateToProps = (state) => {
+  return {
+    dataIdLocal: state.dataIdLocal
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    dispatch1: () => {
+      dispatch({
+        type:'GET_ID_LOCAL',
+      })
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
+
+// export default App;
