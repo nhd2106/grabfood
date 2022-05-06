@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Drawer from "@mui/material/Drawer";
 import Divider from "@mui/material/Divider";
 import Box from "@mui/material/Box";
+import { v4 as uuidv4 } from 'uuid';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Button,
   Container,
@@ -24,19 +26,35 @@ import ItemCart from "./ItemCart";
 import {
   NotificationManager,
 } from "react-notifications";
+// import { FirebaseConnect } from "./Components/FirebaseConnect";
+import { FirebaseConnect } from './../FirebaseConnect/index';
 
-const Call = firebase.database().ref(`Call/`);
+
 
 export default function Index({ data, isShow, handleShow , lock }) {
-  // const [dataUpdate, dataUpdateSet] = useState(data);
 
-  // const [sumPrice, sumPriceSet] = useState(0);
-  const [dataUpdate, dataUpdateSet] =  useState(data);
+  const idRoom = useSelector(state => state.idRoom)
+
+  const dispatch = useDispatch();
+  const deleteIdLocal = useCallback(
+    (index) => dispatch({
+      type: 'DELETE_ID_LOCAL',
+      index : index
+    }),
+  );
+
+  const editIdLcal = useCallback((index, value) => dispatch({
+    type: 'EDIT_ID_LOCAL',
+    value : value,
+    index : index
+  }),
+  [dispatch],
+  )
 
   const sumPrice = () => {
     let sum = 0;
-    _.map(dataUpdate, (value, key) => {
-       sum += (value?.number*value?.sum);
+    _.map(data, (value) => {
+       sum += Number(value?.number*value?.sum);
     })
     return sum;
   }
@@ -53,46 +71,25 @@ export default function Index({ data, isShow, handleShow , lock }) {
   const onChangeNumber = (event) => {
    
     const value = Number(event.target.value) || 0;
-
-    console.log(value)
-
-    if (value < 0) {
-      event.target.value = 0;
+    if (value < 1) {
+      event.target.value = 1;
       return;
     }    
     const index = event.target.name;
-
-    console.log(index)
-
-    dataUpdateSet({
-      ...dataUpdate,
-      [index]: { ...data[index], number: value },
-    });
+    editIdLcal(index,value)
   };
 
-
-  console.log(data)
- 
-
+  const Call = FirebaseConnect().ref(idRoom).child(`/Call/`);
   
-  const handleDeleteFood = (key) => {
-    // console.log(key);
-    Call.child(key).remove().then(() => {
-      const local = localStorage.getItem("ID");
-      let DataID = [{}]
-      try
-        {
-          DataID  =  JSON.parse(local);
-          DataID = DataID.filter(item => item.id != key)
-          localStorage.setItem("ID",JSON.stringify(DataID));
-
+  const handleDeleteFood = (index, uid) => {
+    Call.child(uid).remove().then(() => {
+  
+    deleteIdLocal(index)
           NotificationManager.success(
             "Xóa món ăn thành công.",
             "Thành công",
             3000)
-        }catch{
-          console.log("catch");
-        }
+      
     }).catch((error) => {
       NotificationManager.error(
         error.message,
@@ -103,19 +100,19 @@ export default function Index({ data, isShow, handleShow , lock }) {
 
 
   const handleRequestUnlock = (key) => {
-    Call.child(key).update({
-      Request : true
-    }).then(() => {
-      NotificationManager.success(
-        "Gửi yêu cầu điều chỉnh thành công. Đang chờ quản trị viên xử lý",
-        "Thành công",
-        3000)
-    }).catch((error) => {
-      NotificationManager.error(
-        error.message,
-        "Lỗi",
-        3000)
-    });
+    // Call.child(key).update({
+    //   Request : true
+    // }).then(() => {
+    //   NotificationManager.success(
+    //     "Gửi yêu cầu điều chỉnh thành công. Đang chờ quản trị viên xử lý",
+    //     "Thành công",
+    //     3000)
+    // }).catch((error) => {
+    //   NotificationManager.error(
+    //     error.message,
+    //     "Lỗi",
+    //     3000)
+    // });
   }
 
   const renderTable = () =>
@@ -127,52 +124,71 @@ export default function Index({ data, isShow, handleShow , lock }) {
         handleSumPrice={handleSumPrice}
         handleDeleteFood = {handleDeleteFood}
         handleRequestUnlock = {handleRequestUnlock}
-        lock = {lock}
+        lock = {!lock}
       />
     ));
 
+
+
   const handleUpdateFood = () => {
 
-    _.map(dataUpdate, (value) => {
-      Call.child(value.key).update({
-        number: value.number,
-        Lock: true,
-        Request : false,
-        show : true,
-      });
+    // const Call = FirebaseConnect().ref(idRoom).child(`/Call/`);
+
+    _.map(data, (value) => {
+      // console.log(value);
+        Call.update( { [value.uid] : {
+        id: value?.id,
+        nameFood: value?.nameFood,
+        Option: value?.Option,
+        number: value?.number,
+        sum: value?.sum,
+        img: value?.img,
+        people: localStorage.getItem("User"),
+        foodLock : true,
+        price : value.price,
+        } });
     })
+
+    // localStorage.setItem("Lock","fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa");
+
+      console.log(idRoom);
 
     NotificationManager.success(
       "Đơn hàng đã cập nhật lên hệ thống",
       "Thành công",
       3000); 
 
-    setTimeout(function() {
-      window.location.reload();
-    }, 2000);
+    // setTimeout(function() {
+    //   window.location.reload();
+    // }, 1000);
   };
 
-  const mapDataUpdateToData = () => {
-    for (let index = 0; index < data.length; index++) {
-      if(dataUpdate[index] == null)
-      {
-        dataUpdateSet({
-          ...dataUpdate,
-          [index]: { ...data[index]},
-        });
-      }
-    }
-  }
+  // const mapDataUpdateToData = () => {
+  //   for (let index = 0; index < data.length; index++) {
+  //     if(dataUpdate[index] == null)
+  //     {
+  //       dataUpdateSet({
+  //         ...dataUpdate,
+  //         [index]: { ...data[index]},
+  //       });
+  //     }
+  //   }
+  // }
+
 
   return (
     <Drawer anchor={"right"} open={isShow} onClose={handleShow}>
-      {mapDataUpdateToData()}
+      {/* {mapDataUpdateToData()} */}
+      {/* {console.log(uuidv4())} */}
       <List component="nav" aria-label="mailbox folders">
         <ListItem divider>
-          <h4 className="load-center">Giỏ đồ ăn {sumPrice()}.000 VND </h4>
+          <h4 className="load-center">
+            Giỏ đồ ăn  
+            {/* {sumPrice()/1000}.000 VND  */}
+            </h4>
         </ListItem>
         <ListItem>
-          <h5>Trà Sữa Hi Gogo - Nguyễn Ảnh Thủ</h5>
+          <h5>Danh sách vừa được chọn: </h5>
         </ListItem>
         <ListItem>
           <TableContainer sx={{ maxHeight: "480px" }}>
@@ -193,7 +209,7 @@ export default function Index({ data, isShow, handleShow , lock }) {
               Yêu cầu mở khóa
             </Button> */}
             <Button
-              disabled = {lock}
+              disabled = {!lock}
               onClick={() => handleUpdateFood()}
               variant="contained"
               color="success"

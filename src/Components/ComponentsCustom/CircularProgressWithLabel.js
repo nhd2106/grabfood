@@ -4,8 +4,9 @@ import Backdrop from "@mui/material/Backdrop";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
+import { Button } from "@mui/material";
 
-export default function CircularProgressWithLabel({ value, title, isShow }) {
+export default function CircularProgressWithLabel({ value, title, isShow, Exit }) {
   const CircularProgressWL = (props) => {
     return (
       <Box sx={{ position: "relative", display: "inline-flex" }}>
@@ -44,6 +45,9 @@ export default function CircularProgressWithLabel({ value, title, isShow }) {
         </Grid>
         <Grid container justifyContent="center">
           <Typography color="#00ff00">{title}</Typography>
+        </Grid>
+        <Grid container justifyContent="center">
+          <Button  sx={{ color: "#00ff00"}} onClick = {() => {Exit()}}>Thoát</Button>
         </Grid>
       </Box>
     </Backdrop>
